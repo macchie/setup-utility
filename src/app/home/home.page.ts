@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { IonContent, IonList, IonBadge, IonModal, IonTitle, IonToolbar, IonButton, IonIcon, NavController, ModalController, AlertController, IonItem, IonHeader, IonInput, IonLabel, IonSpinner, IonFooter } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { closeOutline, browsersOutline, cubeOutline, globeOutline, hammerOutline, radioOutline, checkmarkCircleOutline, wifiOutline, wifi, checkmarkCircle, closeCircle, desktopOutline } from 'ionicons/icons';
@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NetworkService, RemoteLookupCommand } from '../services/network-service';
 import { Helpers } from '../helpers';
+import { Command } from '@tauri-apps/plugin-shell';
 
 @Component({
   selector: 'app-home',
@@ -53,7 +54,7 @@ export class HomePage implements OnInit {
     deviceTypeId?: number;
     description?: string;
     serialNumber?: string;
-    deviceNumber?: string;
+    deviceNumber?: number;
   } = {}
 
   serverAddressStatus: string = '';
@@ -62,12 +63,16 @@ export class HomePage implements OnInit {
   deviceIdStatus: string = '';
   checkingDevice: boolean = false;
 
+  lastSeedUpdate: Date | null = null;
+  lastSeedBadgeColor: string = '';
+
   constructor(
-    public posSvc: POSService,
-    public networkSvc: NetworkService,
+    private _cd: ChangeDetectorRef,
     private _navCtrl: NavController,
     private _modalCtrl: ModalController,
     private _alertCtrl: AlertController,
+    public posSvc: POSService,
+    public networkSvc: NetworkService,
   ) {
     addIcons({ 
       browsersOutline,  
@@ -86,6 +91,7 @@ export class HomePage implements OnInit {
 
   async ngOnInit() {
     this.posSvc.getECLIVersion();
+    this.onServerAddressChange('lando.elvispos.com');
   }
 
   async onServerAddressChange(_address: string) {
@@ -126,6 +132,8 @@ export class HomePage implements OnInit {
     this.deviceData = {};
     this.setupData.deviceId = _deviceId;
     this.setupData.deviceIdValid = false;
+    this.lastSeedBadgeColor = '';
+    this.lastSeedUpdate = null;
     this.deviceIdStatus = '';
     
     console.log('Device ID Changed:', _deviceId);
@@ -148,7 +156,9 @@ export class HomePage implements OnInit {
         sdt.sz_device_name as "deviceType"
       FROM system.devices AS d
       JOIN system.store_device_types AS sdt ON (d.n0_store_dev_type = sdt.n0_store_dev_type)
-      WHERE d.n0_device_id = ${_deviceId} AND (d.online_status = FALSE OR d.online_status IS NULL) AND d.dt_deleted IS NULL;
+      WHERE 
+        d.n0_device_id = ${_deviceId} AND 
+        (d.online_status = FALSE OR d.online_status IS NULL) AND d.dt_deleted IS NULL;
     `;
 
     const resp = await this.networkSvc.remoteLookup(RemoteLookupCommand.CMD_FREE_QUERY_JSONARRAY, query, this.setupData.serverAddress);
@@ -165,6 +175,39 @@ export class HomePage implements OnInit {
 
     this.checkingDevice = false;
 
+    const _command = `RSYNC_PASSWORD=ef7dc668-8fc3-47a2-ba45-f0d9582c55d5 rsync -avz --list-only elvispos@lando.elvispos.com::share/STORE_SEEDS/`;
+    const _result = await Command.create('exec-sh', ['-c', _command]).execute();
+
+    if (_result.code === 0) {
+      console.log('Rsync output:', _result.stdout);
+
+      for (const line of _result.stdout.split('\n')) {
+        if (line.includes(`s${this.deviceData.storeId}-db-data.sql.gz`)) {
+          const parts = line.split(' ');
+          this.lastSeedUpdate = new Date(`${parts[parts.length-3]} ${parts[parts.length-2]}`);
+
+          if (new Date().getTime() > this.lastSeedUpdate.getTime() + (1000 * 60 * 60 * 24 * 5)) {
+            this.lastSeedBadgeColor = 'danger';
+          }
+          
+          if (
+            new Date().getTime() > this.lastSeedUpdate.getTime() + (1000 * 60 * 60 * 24) &&
+            new Date().getTime() < this.lastSeedUpdate.getTime() + (1000 * 60 * 60 * 24 * 5)
+          ) {
+            this.lastSeedBadgeColor = 'warning';
+          }
+
+          if (new Date().getTime() < this.lastSeedUpdate.getTime() + (1000 * 60 * 60 * 24)) {
+            this.lastSeedBadgeColor = 'success';
+          }
+        }
+      }
+
+      this._cd.detectChanges();
+    }
+
+        
+
     //       try {
     //         const dryResp = await Shell.run(
     //           `rsync`,
@@ -177,31 +220,7 @@ export class HomePage implements OnInit {
     //         );
 
     //         // -rw-r--r--            259 2022/11/24 15:22:34 s1001-db-data.sql.gz
-    //         for (const line of dryResp.split('\n')) {
-    //           if (line.includes(`s${this.deviceInfo.n0_store_id}-db-data.sql.gz`)) {
-    //             const parts = line.split(' ');
-    //             this.lastSeedUpdate = new Date(`${parts[parts.length-3]} ${parts[parts.length-2]}`);
 
-    //             if (new Date().getTime() > this.lastSeedUpdate.getTime() + (1000 * 60 * 60 * 24 * 5)) {
-    //               this.lastSeedBadgeColor = 'danger';
-    //             }
-                
-    //             if (
-    //               new Date().getTime() > this.lastSeedUpdate.getTime() + (1000 * 60 * 60 * 24) &&
-    //               new Date().getTime() < this.lastSeedUpdate.getTime() + (1000 * 60 * 60 * 24 * 5)
-    //             ) {
-    //               this.lastSeedBadgeColor = 'warning';
-    //             }
-
-    //             if (new Date().getTime() < this.lastSeedUpdate.getTime() + (1000 * 60 * 60 * 24)) {
-    //               this.lastSeedBadgeColor = 'success';
-    //             }
-    //           }
-
-    //           if (!this.lastSeedUpdate) {
-    //             this.lastSeedBadgeColor = 'dark';
-    //           }
-    //         }
     //       } catch (error) {
     //         this.lastSeedBadgeColor = 'dark';
     //         this.lastSeedUpdate = null;
@@ -226,6 +245,7 @@ export class HomePage implements OnInit {
 
     if (foundServers.length > 0) {
       const _alert = await this._alertCtrl.create({
+        cssClass: 'select-alert',
         header: `${foundServers.length}x Servers Found!`,
         message: 'The following servers were found on your local networks. Please select one to continue.',
         inputs: foundServers.map(server => {
@@ -293,7 +313,9 @@ export class HomePage implements OnInit {
         sdt.sz_device_name as "deviceType"
       FROM system.devices AS d
       JOIN system.store_device_types AS sdt ON (d.n0_store_dev_type = sdt.n0_store_dev_type)
-      WHERE (d.online_status = FALSE OR d.online_status IS NULL) AND d.dt_deleted IS NULL
+      WHERE 
+        sdt.sz_device_name NOT IN ('API', 'STORE-SERVER', 'YELLOWBOX') AND
+        (d.online_status = FALSE OR d.online_status IS NULL) AND d.dt_deleted IS NULL
       ORDER BY d.n0_device_id ASC;
     `;
 
@@ -301,6 +323,7 @@ export class HomePage implements OnInit {
     console.log('Remote lookup response:', _foundDevices);
 
     const _alert = await this._alertCtrl.create({
+      cssClass: 'select-alert',
       header: `${_foundDevices.length}x Devices Found`,
       message: 'The following devices were found. Please select one to continue.',
       inputs: _foundDevices.map((device: any) => {
@@ -316,19 +339,19 @@ export class HomePage implements OnInit {
           role: 'cancel'
         },
         {
-          text: 'OK',
+          text: 'Confirm',
+          role: 'confirm',
           handler: (value) => {
+            if (value) {
+              console.log('Selected Device:', value);
+              this.onDeviceIDChange(value);
+            }
           }
         }
       ]
     });
 
     await _alert.present();
-    const _resp = await _alert.onDidDismiss();
-
-    console.log('Selected Device:', _resp.data.values);
-
-    this.onDeviceIDChange(_resp.data.values);
   }
 
   async onManualSetup() {

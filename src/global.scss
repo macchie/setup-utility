@@ -222,11 +222,72 @@ ion-badge {
 
   &.ion-color-warning {
     background: rgba(var(--ion-color-warning-rgb), 0.1);
-    color: var(--ion-color-warning);
+    color: var(--ion-color-warning-shade);
   }
 
   &.ion-color-danger {
     background: rgba(var(--ion-color-danger-rgb), 0.1);
     color: var(--ion-color-danger);
+  }
+}
+
+ion-alert {
+  &.select-alert {
+    .alert-wrapper {
+      min-height: 620px !important;
+    }
+  }
+  
+  .alert-wrapper{
+    border-radius: 24px !important;
+    min-width: 720px !important;
+
+    .alert-head {
+      padding-top: 32px;
+    }
+    
+    .alert-message {
+      padding-bottom: 32px;
+    }
+
+    .alert-button-group {
+      padding: 16px ;
+
+      .alert-button {
+        min-width: 128px;
+        min-height: 44px;
+        padding: 4px 16px;
+        background: var(--ion-color-light);
+        border-radius: 12px;
+        
+        .alert-button-inner {
+          text-align: center !important;
+          padding: 0;
+        }
+
+        &.alert-button-role-cancel {
+          color: var(--ion-color-dark);
+        }
+
+        &.alert-button-role-confirm {
+          color: var(--ion-color-success);
+        }
+      }
+    }
+    
+    .alert-radio-group {
+      padding: 16px 0;
+      // border: none !important;
+
+      .alert-radio-button {
+        min-height: 64px;
+        padding: 4px 16px;
+        
+        .alert-button-inner {
+          background: var(--ion-color-light);
+          border-radius: 12px;
+        }
+      }
+    }
   }
 }

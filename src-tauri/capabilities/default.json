@@ -16,7 +16,7 @@
       "allow": [
         {
           "name": "exec-sh",
-          "cmd": "sh",
+          "cmd": "bash",
           "args": [
             "-c",
             {

@@ -105,7 +105,7 @@
             <ion-label>Name</ion-label>
             @if (deviceData.id && deviceData.description) {
               <ion-badge slot="end" [color]="deviceData.id ? 'success' : 'danger'" >
-                #{{deviceData.id}}{{deviceData.deviceNumber ? ' / ' + deviceData.deviceNumber : ''}} : {{deviceData.description || 'NO DESCRIPTION'}}
+                #{{deviceData.id}}{{deviceData.deviceNumber && deviceData.deviceNumber > 0 ? ' / ' + deviceData.deviceNumber : ''}} : {{deviceData.description || 'NO DESCRIPTION'}}
               </ion-badge>
             } @else {
               <ion-badge slot="end">
@@ -139,10 +139,15 @@
           </ion-item>
           <ion-item>
             <ion-label>POS DB Snapshot Date</ion-label>
-            <ion-badge slot="end" color="danger">NOT FOUND</ion-badge>
-            <!-- <ion-badge slot="end" [color]="lastSeedBadgeColor" *ngIf="lastSeedUpdate">{{lastSeedUpdate |
-                          date:'medium'}}</ion-badge>
-                        <ion-badge slot="end" color="danger" *ngIf="!lastSeedUpdate">NOT FOUND</ion-badge> -->
+            @if (lastSeedUpdate) {
+              <ion-badge slot="end" [color]="lastSeedBadgeColor">
+                {{lastSeedUpdate | date:'medium'}}
+              </ion-badge>
+            } @else {
+              <ion-badge slot="end">
+                NO INFO
+              </ion-badge>
+            }
           </ion-item>
         </ion-list>
       </div>
@@ -150,7 +155,7 @@
     <ion-footer>
       <ion-toolbar>
         <div slot="end">
-          <ion-button color="success" (click)="manualSetupModal.dismiss()">
+          <ion-button [disabled]="!setupData.serverAddressValid || !setupData.deviceIdValid" color="success" (click)="manualSetupModal.dismiss()">
             <ion-icon name="checkmark-circle-outline"></ion-icon>
             <span>Confirm Setup</span>
           </ion-button>
