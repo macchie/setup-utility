@@ -6,17 +6,18 @@
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:8100",
-    "beforeDevCommand": "ionic serve",
+    "beforeDevCommand": "ionic serve --no-open",
     "beforeBuildCommand": "ionic build --configuration production"
   },
   "app": {
     "windows": [
       {
         "title": "ElvisPOS Setup Utility",
-        "width": 800,
-        "height": 600,
+        "width": 960,
+        "height": 718,
         "resizable": true,
-        "fullscreen": false
+        "fullscreen": false,
+        "devtools": true
       }
     ],
     "security": {

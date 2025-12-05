@@ -1,20 +1,161 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
+<ion-content [scrollX]="false" [scrollY]="false" id="main-content">
   <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+    <div id="header">
+      <img src="assets/logo.png" id="logo">
+      <h3 id="title">POS Setup</h3>
+    </div>
+    
+    <div id="options">
+      <ion-button class="large" color="danger">
+        <ion-icon slot="start" name="wifi"></ion-icon>
+        <span>Network Setup</span>
+      </ion-button>
+      
+      <ion-button class="large" color="light">
+        <ion-icon slot="start" name="browsers-outline"></ion-icon>
+        <span>Setup Browser Only Mode</span>
+      </ion-button>
+      
+      <ion-button class="large" color="warning">
+        <ion-icon slot="start" name="cube-outline"></ion-icon>
+        <span>Drivers & Software</span>
+      </ion-button>
+      
+      <ion-button id="manual-setup-modal" class="large" color="primary">
+        <ion-icon slot="start" name="hammer-outline"></ion-icon>
+        <span>POS Setup</span>
+      </ion-button>
+    </div>
+  
+    <small id="version">
+      Setup Utility v{{posSvc.appVersion}} -
+      ECLI v{{posSvc.ecliVersion}}
+    </small>
   </div>
 </ion-content>
+
+<ion-modal #manualSetupModal trigger="manual-setup-modal">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>POS Setup</ion-title>
+        <p class="subtitle">Please enter your <b>Server Address</b> and <b>POS Device ID</b></p>
+        <div slot="end">
+          <ion-button class="close-button" (click)="manualSetupModal.dismiss()">
+            <ion-icon name="close-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+
+      <div style="display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap;">
+        <div class="input color-{{serverAddressStatus}}" style="flex: 1 0 70%;">
+          <ion-label >Server Address</ion-label>
+          <ion-input [ngModel]="setupData.serverAddress" (ngModelChange)="onServerAddressChange($event)" [debounce]="2000" type="text" placeholder="Ex: 123.123.123.123, server.com, prod.server.com"></ion-input>
+
+          @if (serverAddressStatus) {
+            @if (!checkingAddress) {
+              <ion-icon 
+                class="status-icon"
+                [name]="setupData.serverAddressValid ? 'checkmark-circle' : 'close-circle'"
+                [color]="setupData.serverAddressValid ? 'success' : 'danger'"
+              ></ion-icon>
+            } @else {
+              <ion-spinner class="loader" name="crescent"></ion-spinner>
+            }
+          }
+        </div>
+        <ion-button (click)="onScanNetworks()" style="flex: 1 0 20%;" tabindex="-1">
+          <ion-icon icon="radio-outline"></ion-icon>
+          Scan Network
+        </ion-button>
+
+        <div class="input color-{{deviceIdStatus}}" style="flex: 1 0 70%;">
+          <ion-label >POS Device ID</ion-label>
+          <ion-input 
+            type="number" placeholder="Ex: 1, 10, 37" 
+            min="1" 
+            [ngModel]="setupData.deviceId" 
+            (ngModelChange)="onDeviceIDChange($event)"
+            [debounce]="2000"
+            [disabled]="!setupData.serverAddressValid"
+          ></ion-input>
+
+          @if (deviceIdStatus) {
+            @if (!checkingDevice) {
+              <ion-icon 
+                class="status-icon"
+                [name]="setupData.deviceIdValid ? 'checkmark-circle' : 'close-circle'"
+                [color]="setupData.deviceIdValid ? 'success' : 'danger'"
+              ></ion-icon>
+            } @else {
+              <ion-spinner class="loader" name="crescent"></ion-spinner>
+            }
+          }
+        </div>
+
+        <ion-button [disabled]="!setupData.serverAddressValid" (click)="onSearchDevices()" style="flex: 1 0 20%;" tabindex="-1" color="secondary">
+          <ion-icon icon="desktop-outline"></ion-icon>
+          Search Devices
+        </ion-button>
+
+        <ion-list style="flex: 3 0 60%;" lines="none">
+          <ion-item>
+            <ion-label>Name</ion-label>
+            @if (deviceData.id && deviceData.description) {
+              <ion-badge slot="end" [color]="deviceData.id ? 'success' : 'danger'" >
+                #{{deviceData.id}}{{deviceData.deviceNumber ? ' / ' + deviceData.deviceNumber : ''}} : {{deviceData.description || 'NO DESCRIPTION'}}
+              </ion-badge>
+            } @else {
+              <ion-badge slot="end">
+                NO INFO
+              </ion-badge>
+            }
+          </ion-item>
+          <ion-item>
+            <ion-label>Serial No.</ion-label>
+            @if (deviceData.serialNumber) {
+              <ion-badge slot="end" [color]="deviceData.serialNumber ? 'success' : 'danger'">
+                {{deviceData.serialNumber || 'NO SERIAL NO'}}
+              </ion-badge>
+            } @else {
+              <ion-badge slot="end">
+                NO INFO
+              </ion-badge>
+            }
+          </ion-item>
+          <ion-item>
+            <ion-label>POS Type</ion-label>
+            @if (deviceData.deviceTypeId && deviceData.deviceType) {
+              <ion-badge slot="end" [color]="deviceData.serialNumber ? 'success' : 'danger'">
+                #{{deviceData.deviceTypeId}}: {{deviceData.deviceType}}
+              </ion-badge>
+            } @else {
+              <ion-badge slot="end">
+                NO INFO
+              </ion-badge>
+            }
+          </ion-item>
+          <ion-item>
+            <ion-label>POS DB Snapshot Date</ion-label>
+            <ion-badge slot="end" color="danger">NOT FOUND</ion-badge>
+            <!-- <ion-badge slot="end" [color]="lastSeedBadgeColor" *ngIf="lastSeedUpdate">{{lastSeedUpdate |
+                          date:'medium'}}</ion-badge>
+                        <ion-badge slot="end" color="danger" *ngIf="!lastSeedUpdate">NOT FOUND</ion-badge> -->
+          </ion-item>
+        </ion-list>
+      </div>
+    </ion-content>
+    <ion-footer>
+      <ion-toolbar>
+        <div slot="end">
+          <ion-button color="success" (click)="manualSetupModal.dismiss()">
+            <ion-icon name="checkmark-circle-outline"></ion-icon>
+            <span>Confirm Setup</span>
+          </ion-button>
+        </div>
+      </ion-toolbar>
+    </ion-footer>
+  </ng-template>
+</ion-modal>
