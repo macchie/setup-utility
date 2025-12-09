@@ -72,7 +72,7 @@ export class NetworkSetupPage implements OnInit {
     await this.networkSvc.initialize();
   }
 
-  async onRefreshSection(_newSection: 'network' | 'dns' | 'proxy') {
+  async onRefreshSection() {
     this.networkSvc.initialize();
     return;
     const _alert = await this._alertCtrl.create({
@@ -97,10 +97,19 @@ export class NetworkSetupPage implements OnInit {
       return;
     }
 
-    // if (!this._sections[this._section].dirty) {
-    //   this._section = _newSection;
-    //   return;
-    // }
+    let _dirty = false;
+
+    for (let key in this.networkSvc.networkInterfaces) {
+      if (this.networkSvc.networkInterfaces[key]._formGroup.dirty) {
+        _dirty = true;
+        break;
+      }
+    }
+
+    if (!_dirty) {
+      this._section = _newSection;
+      return;
+    }
 
     const _alert = await this._alertCtrl.create({
       header: 'Change Section',
@@ -110,7 +119,9 @@ export class NetworkSetupPage implements OnInit {
         {
           text: 'Change',
           handler: () => {
+            this.onRefreshSection();
             this._section = _newSection;
+            this.onRefreshSection();
           }
         }
       ]

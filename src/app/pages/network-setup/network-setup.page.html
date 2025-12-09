@@ -36,7 +36,7 @@
         <div class="section-header">
           <h2>Network Configuration</h2>
           <div class="actions">
-            <ion-button class="square-button" color="light" (click)="onRefreshSection('network')">
+            <ion-button class="square-button" color="light" (click)="onRefreshSection()">
               <ion-icon src="assets/lucide/refresh.svg"></ion-icon>
             </ion-button>
             <ion-button class="ion-margin-end" color="success" (click)="networkSvc.onSaveInterfaces()" [disabled]="!canSaveNetwork">
