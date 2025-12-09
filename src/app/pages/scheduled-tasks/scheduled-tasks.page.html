@@ -1,0 +1,49 @@
+<ion-header id="main-header">
+  <ion-toolbar>
+    <div id="logo" slot="start">
+      <ion-icon name="calendar-outline"></ion-icon>
+    </div>
+    <ion-title>Scheduled Tasks</ion-title>
+    <p class="subtitle">Configure the POS scheduled Tasks</p>
+
+    <div slot="end">
+      <ion-button class="square-button color-danger" (click)="onGoBack()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <h6 class="page-section">Automation</h6>
+  <div class="section-header">
+    <h2>Cron Operations</h2>
+    <ion-button>
+      <ion-icon name="add-outline"></ion-icon>
+      <span>Add</span>
+    </ion-button>
+  </div>
+  <ion-card>
+    <ion-list lines="full">
+      <ion-item-divider>
+        <div class="divider-content">
+          <b>SYSTEM CRONTAB</b>
+          <span>{{cronSvc.CRONTAB_FILE}}</span>
+        </div>
+      </ion-item-divider>
+      @for (_task of cronSvc.tasks; track $index) {
+        <ion-item role="item">
+          <ion-badge slot="start" color="success">{{_task.rule}}</ion-badge>
+          <ion-label>
+            <h4>{{_task.description}}</h4>
+            <small>{{_task.command}}</small>
+          </ion-label>
+          <ion-toggle mode="ios" color="success" slot="end" [checked]="_task.active" [disabled]="_task.readonly"></ion-toggle>
+          <ion-button class="square-button color-medium" slot="end" [disabled]="!_task.editable">
+            <ion-icon name="settings-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+      }
+    </ion-list>
+  </ion-card>
+</ion-content>

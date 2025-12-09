@@ -25,6 +25,31 @@
           ]
         }
       ]
+    },
+    "fs:default",
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [
+        "/tmp/**"
+      ]
+    },
+    {
+      "identifier": "fs:allow-remove",
+      "allow": [
+        "/tmp/**"
+      ]
+    },
+    {
+      "identifier": "fs:allow-read-text-file",
+      "allow": [
+        "/tmp/**"
+      ]
+    },
+    {
+      "identifier": "fs:allow-write-text-file",
+      "allow": [
+        "/tmp/**"
+      ]
     }
   ]
 }

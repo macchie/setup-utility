@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
-import { IonContent, IonList, IonBadge, IonModal, IonTitle, IonToolbar, IonButton, IonIcon, NavController, ModalController, AlertController, IonItem, IonHeader, IonInput, IonLabel, IonSpinner, IonFooter } from '@ionic/angular/standalone';
+import { IonContent, IonList, IonBadge, IonModal, IonTitle, IonToolbar, IonButton, IonIcon, NavController, ModalController, AlertController, IonItem, IonHeader, IonInput, IonLabel, IonSpinner, IonFooter, IonText } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { closeOutline, browsersOutline, cubeOutline, globeOutline, hammerOutline, radioOutline, checkmarkCircleOutline, wifiOutline, wifi, checkmarkCircle, closeCircle, desktopOutline } from 'ionicons/icons';
+import { closeOutline, browsersOutline, cubeOutline, globeOutline, hammerOutline, radioOutline, checkmarkCircleOutline, wifiOutline, wifi, checkmarkCircle, closeCircle, desktopOutline, calendarOutline, printOutline, layersOutline, wifiSharp, extensionPuzzleOutline, hardwareChipOutline, powerOutline, ellipse, settingsOutline, settingsSharp } from 'ionicons/icons';
 import { POSService } from '../services/posservice';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -13,7 +13,7 @@ import { Command } from '@tauri-apps/plugin-shell';
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
-  imports: [IonFooter, 
+  imports: [IonText, IonFooter, 
     CommonModule,
     FormsModule,
     IonInput, 
@@ -76,22 +76,34 @@ export class HomePage implements OnInit {
   ) {
     addIcons({ 
       browsersOutline,  
+      calendarOutline,
       checkmarkCircle,
       checkmarkCircleOutline,
+      ellipse,
       closeCircle,
       closeOutline,
       cubeOutline,
       desktopOutline,
-      globeOutline, 
+      extensionPuzzleOutline,
+      globeOutline,
       hammerOutline,
+      hardwareChipOutline,
+      layersOutline,
+      printOutline,
+      powerOutline,
       radioOutline,
-      wifi
+      settingsSharp,
+      wifi,
+      wifiSharp
     })
   }
 
   async ngOnInit() {
-    this.posSvc.getECLIVersion();
     this.onServerAddressChange('lando.elvispos.com');
+  }
+
+  async onNavigateTo(_page: string) {
+    this._navCtrl.navigateForward(`/${_page}`);
   }
 
   async onServerAddressChange(_address: string) {

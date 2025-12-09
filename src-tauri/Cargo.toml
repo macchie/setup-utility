@@ -28,3 +28,4 @@ tauri-plugin-network = "2.0.4"
 tauri-plugin-tcp = "0.1.2"
 tokio = { version = "1", features = ["full"] }
 futures = "0.3"
+tauri-plugin-fs = "2"

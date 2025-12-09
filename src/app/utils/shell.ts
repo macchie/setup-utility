@@ -1,0 +1,17 @@
+import { Command } from "@tauri-apps/plugin-shell";
+
+export class Shell {
+
+  public static customEnv: {
+    [key: string]: string;
+  } = { 
+    RSYNC_PASSWORD: 'ef7dc668-8fc3-47a2-ba45-f0d9582c55d5',
+  };
+  
+  static async run(_command: string, args: string[]): Promise<any> {
+    const _finalCommand = `${_command} ${args.join(' ')}`;
+    const _result = await Command.create('exec-sh', ['-c', _finalCommand]).execute();
+
+    return _result
+  }
+}
