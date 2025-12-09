@@ -30,25 +30,57 @@
     {
       "identifier": "fs:allow-exists",
       "allow": [
-        "/tmp/**"
+        "/tmp/**",
+        "$APPCONFIG",
+        "$APPCONFIG/**",
+        "/sys/class/net",
+        "/sys/class/net/**",
+        "/sys/class/net/**/wireless",
+        "/sys/class/net/**/wireless/**",
+        "/etc/wpa_supplicant/**"
+      ]
+    },
+    {
+      "identifier": "fs:allow-read-dir",
+      "allow": [
+        "/tmp/**",
+        "$APPCONFIG",
+        "$APPCONFIG/**",
+        "/sys/class/net",
+        "/sys/class/net/**"
+      ]
+    },
+    {
+      "identifier": "fs:allow-mkdir",
+      "allow": [
+        "/tmp/**",
+        "$APPCONFIG",
+        "$APPCONFIG/**"
       ]
     },
     {
       "identifier": "fs:allow-remove",
       "allow": [
-        "/tmp/**"
+        "/tmp/**",
+        "$APPCONFIG/**"
       ]
     },
     {
       "identifier": "fs:allow-read-text-file",
       "allow": [
-        "/tmp/**"
+        "/tmp/**",
+        "$APPCONFIG/**",
+        "/sys/class/net",
+        "/sys/class/net/**",
+        "/etc/wpa_supplicant/**"
       ]
     },
     {
       "identifier": "fs:allow-write-text-file",
       "allow": [
-        "/tmp/**"
+        "/tmp/**",
+        "$APPCONFIG/**",
+        "/etc/wpa_supplicant/**"
       ]
     }
   ]

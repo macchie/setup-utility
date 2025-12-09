@@ -23,7 +23,7 @@ export interface CronTask {
 })
 export class CronService {
 
-  public CONFIG_FILE = `/tmp/crontab.config.json`;
+  public CONFIG_FILE = `crontab.config.json`;
   public CRONTAB_FILE = `/tmp/crontab`;
 
   public tasks: CronTask[] = [];
@@ -40,14 +40,14 @@ export class CronService {
   
   private async _readConfigFile() {
     try {
-      await remove(this.CONFIG_FILE);
+      // await remove(this.CONFIG_FILE);
 
-      let _fileExists = await exists(this.CONFIG_FILE);
+      let _fileExists = await exists(this.CONFIG_FILE, { baseDir: BaseDirectory.AppConfig });
 
       if (!_fileExists) {
         await this._writeDefaultConfigFile();
 
-        _fileExists = await exists(this.CONFIG_FILE);
+        _fileExists = await exists(this.CONFIG_FILE, { baseDir: BaseDirectory.AppConfig });
 
         if (!_fileExists) {
           throw new Error('Failed to create config file');
@@ -56,7 +56,7 @@ export class CronService {
         console.log('Default config file created');
       }
 
-      const content = await readTextFile(this.CONFIG_FILE);
+      const content = await readTextFile(this.CONFIG_FILE, { baseDir: BaseDirectory.AppConfig });
       
       
       const parsed = JSON.parse(content);
@@ -75,6 +75,6 @@ export class CronService {
       tasks: Object.values(CRONTAB_DEFAULT_TASKS),
     }, null, 2);
 
-    await writeTextFile(this.CONFIG_FILE, _content);
+    await writeTextFile(this.CONFIG_FILE, _content, { baseDir: BaseDirectory.AppConfig });
   }
 }

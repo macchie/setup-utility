@@ -50,12 +50,12 @@
     <hr>
 
     <div id="options">
-      <ion-button class="large" color="medium">
-        <ion-icon slot="start" name="wifi-sharp" color="success"></ion-icon>
+      <ion-button class="large" color="medium" (click)="onNavigateTo('network-setup')">
+        <ion-icon slot="start" src="assets/lucide/network.svg"></ion-icon>
         <span>Network Setup</span>
       </ion-button>
       
-      <ion-button class="large" color="medium">
+      <ion-button class="large" color="medium" (click)="onNavigateTo('drivers-and-software')">
         <ion-icon slot="start" name="hardware-chip-outline"></ion-icon>
         <span>Drivers & Software</span>
       </ion-button>

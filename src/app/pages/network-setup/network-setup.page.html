@@ -1,0 +1,146 @@
+<ion-header id="main-header">
+  <ion-toolbar>
+    <div id="logo" slot="start">
+      <ion-icon src="assets/lucide/network.svg"></ion-icon>
+    </div>
+    <ion-title>Network Setup</ion-title>
+    <p class="subtitle">Configure Network Interfaces, DNS and Proxy</p>
+
+    <div style="display: flex; align-items: center;" slot="end">
+      <div class="button-group">
+        <ion-button [color]="_section === 'network' ? 'secondary' : 'light'" (click)="onChangeSection('network')">
+          <ion-icon src="assets/lucide/network.svg"></ion-icon>
+          Networks
+        </ion-button>
+        <ion-button [color]="_section === 'dns' ? 'secondary' : 'light'" (click)="onChangeSection('dns')">
+          <ion-icon src="assets/lucide/server.svg"></ion-icon>
+          DNS
+        </ion-button>
+        <ion-button [color]="_section === 'proxy' ? 'secondary' : 'light'" (click)="onChangeSection('proxy')">
+          <ion-icon src="assets/lucide/waypoints.svg"></ion-icon>
+          Proxy
+        </ion-button>
+      </div>
+
+      <ion-button class="square-button color-danger ion-margin-start" (click)="onGoBack()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="page-content">
+    @if (_section === 'network') {
+        <!-- <h6 class="page-section">Connectivity</h6> -->
+        <div class="section-header">
+          <h2>Network Configuration</h2>
+          <div class="actions">
+            <ion-button class="square-button" color="light" (click)="onRefreshSection('network')">
+              <ion-icon src="assets/lucide/refresh.svg"></ion-icon>
+            </ion-button>
+            <ion-button class="ion-margin-end" color="success" (click)="networkSvc.onSaveInterfaces()" [disabled]="!canSaveNetwork">
+              <ion-icon src="assets/lucide/save.svg"></ion-icon>
+              Save Changes
+            </ion-button>
+          </div>
+        </div>
+    
+        <div class="networks-content">
+          <ion-card>
+            <ion-list lines="full">
+              @for (_entry of networkSvc.networkInterfaces | keyvalue; track $index) {
+                <ion-item button (click)="networkSvc.onSetSelectedInterface(_entry.value)" [class.selected]="_entry.key === networkSvc.selectedInterfaceKey" >
+                  <div class="meta" slot="start">
+                    <ion-icon [src]="_entry.value.type === 'wired' ? 'assets/lucide/ethernet-port.svg' : 'assets/lucide/wireless.svg'" [color]="_entry.value.connected ? 'success' : 'danger'"></ion-icon>
+                    <ion-badge color="medium">{{_entry.value.mode | uppercase}}</ion-badge>
+                  </div>
+                  <ion-label>
+                    <h4>{{_entry.value.name}}</h4>
+                    <p>{{_entry.value.connected ? 'Online' : 'Offline'}}</p>
+                  </ion-label>
+                  <ion-icon slot="end" [name]="_entry.key === networkSvc.selectedInterfaceKey ? 'radio-button-on' : 'radio-button-off'" [color]="_entry.key === networkSvc.selectedInterfaceKey ? 'primary' : 'medium'"></ion-icon>
+                </ion-item>
+              }
+            </ion-list>
+          </ion-card>
+
+          <ion-card>
+            @if (networkSvc.selectedInterfaceKey) {
+              <ion-list lines="full">
+                <ion-item-divider>
+                  <div class="divider-content">
+                    <b class="ion-no-margin ion-no-padding">
+                      Interface:
+                      <ion-text color="primary">
+                        {{networkSvc.networkInterfaces[networkSvc.selectedInterfaceKey].name}}
+                      </ion-text>
+                    </b>
+                    <span>{{networkSvc.networkInterfaces[networkSvc.selectedInterfaceKey].macAddress}}</span>
+                  </div>
+                </ion-item-divider>
+              </ion-list>
+              <ion-card-content>
+                <form [formGroup]="networkSvc.networkInterfaces[networkSvc.selectedInterfaceKey]._formGroup">
+                  @if (networkSvc.networkInterfaces[networkSvc.selectedInterfaceKey].type === 'wireless') {
+                    <div class="input-group">
+                      <div class="input color-{{networkSvc.networkInterfaces[networkSvc.selectedInterfaceKey]._formGroup.get('wifi_ssid')?.valid ? 'success' : 'danger'}}">
+                        <ion-label for="ssid">SSID</ion-label>
+                        <ion-input formControlName="wifi_ssid" placeholder="WIFI Name"></ion-input>
+                      </div>
+                      <div class="input color-{{networkSvc.networkInterfaces[networkSvc.selectedInterfaceKey]._formGroup.get('wifi_password')?.valid ? 'success' : 'danger'}}">
+                        <ion-label for="password">PASSWORD</ion-label>
+                        <ion-input type="password" formControlName="wifi_password" placeholder="WIFI Password"></ion-input>
+                      </div>
+                    </div>
+                    <hr>
+                  }
+                  <div class="input ion-margin-bottom color-{{networkSvc.networkInterfaces[networkSvc.selectedInterfaceKey]._formGroup.get('ip')?.valid ? 'success' : 'danger'}}">
+                    <ion-label for="ip">IP ADDRESS</ion-label>
+                    <ion-input formControlName="ip" placeholder="10.0.0.123"></ion-input>
+                  </div>
+                  <div class="input-group">
+                    <div class="input color-{{networkSvc.networkInterfaces[networkSvc.selectedInterfaceKey]._formGroup.get('netmask')?.valid ? 'success' : 'danger'}}">
+                      <ion-label for="netmask">NETMASK</ion-label>
+                      <ion-input formControlName="netmask" placeholder="255.255.255.0"></ion-input>
+                    </div>
+                    <div class="input color-{{networkSvc.networkInterfaces[networkSvc.selectedInterfaceKey]._formGroup.get('gateway')?.valid ? 'success' : 'danger'}}">
+                      <ion-label for="gateway">GATEWAY</ion-label>
+                      <ion-input formControlName="gateway" placeholder="10.0.0.1"></ion-input>
+                    </div>
+                  </div>
+                </form>
+              </ion-card-content>
+            }
+          </ion-card>
+        </div>
+    } @else if (_section === 'dns') {
+      <!-- <h6 class="page-section">Resources</h6> -->
+      <div class="section-header">
+        <h2>DNS Configuration</h2>
+        <ion-button class="ion-margin-end" color="success" disabled="">
+          <ion-icon src="assets/lucide/save.svg"></ion-icon>
+          Save Changes
+        </ion-button>
+      </div>
+      
+      <ion-card class="ion-margin-bottom">
+        <p>DNS</p>
+        
+      </ion-card>
+    } @else if (_section === 'proxy') {
+      <!-- <h6 class="page-section">Resources</h6> -->
+      <div class="section-header">
+        <h2>Proxy Configuration</h2>
+        <ion-button class="ion-margin-end" color="success" disabled="">
+          <ion-icon src="assets/lucide/save.svg"></ion-icon>
+          Save Changes
+        </ion-button>
+      </div>
+      
+      <ion-card class="ion-margin-bottom">
+        <p>Proxies</p>
+      </ion-card>
+    }
+  </div>
+</ion-content>

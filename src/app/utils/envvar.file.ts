@@ -97,25 +97,25 @@ export class EnvVarFile {
 
       if (useExports) {
         if (envvar._delete) {
-          await Shell.run(`sed`, [`-i`, `/^\\(export *\\|# *export *\\|#export *\\|\\)${key}\\(\\| *\\)=\\(\\| *\\).*$/d`, this._filePath]);
+          await Shell.run(`sed -i /^\\(export *\\|# *export *\\|#export *\\|\\)${key}\\(\\| *\\)=\\(\\| *\\).*$/d ${this._filePath}`);
           continue;
         }
         
         if (envvar._new) {
-          await Shell.run(`/bin/bash`, [`-c`, `echo "export ${key}=\\"${envvar.value}\\"" >> ${this._filePath}`]);
+          await Shell.run(`echo "export ${key}=\\"${envvar.value}\\"" >> ${this._filePath}`);
         } else {
-          await Shell.run(`sed`, [`-i`, `s/^\\(export *\\|# *export *\\|#export *\\|\\)${key}\\(\\| *\\)=\\(\\| *\\).*$/${envvar.enabled ? '' : '# '}export ${key}=\\"${escapedValue}\\"/`, this._filePath]);
+          await Shell.run(`sed -i s/^\\(export *\\|# *export *\\|#export *\\|\\)${key}\\(\\| *\\)=\\(\\| *\\).*$/${envvar.enabled ? '' : '# '}export ${key}=\\"${escapedValue}\\"/ ${this._filePath}`);
         }
       } else {
         if (envvar._delete) {
-          await Shell.run(`sed`, [`-i`, `/^\\(export *\\|# *export *\\|#export *\\|\\)${key}\\(\\| *\\)=\\(\\| *\\).*$/d`, this._filePath]);
+          await Shell.run(`sed -i /^\\(export *\\|# *export *\\|#export *\\|\\)${key}\\(\\| *\\)=\\(\\| *\\).*$/d ${this._filePath}`);
           continue;
         }
         
         if (envvar._new) {
-          await Shell.run(`/bin/bash`, [`-c`, `echo "${key}=${envvar.value}" >> ${this._filePath}`]);
+          await Shell.run(`echo "${key}=${envvar.value}" >> ${this._filePath}`);
         } else {
-          await Shell.run(`sed`, [`-i`, `s/^\\(export *\\|# *export *\\|#export *\\|\\)${key}\\(\\| *\\)=\\(\\| *\\).*$/${envvar.enabled ? '' : '# '}${key}=${escapedValue}/`, this._filePath]);
+          await Shell.run(`sed -i s/^\\(export *\\|# *export *\\|#export *\\|\\)${key}\\(\\| *\\)=\\(\\| *\\).*$/${envvar.enabled ? '' : '# '}${key}=${escapedValue}/ ${this._filePath}`);
         }
       }
 

@@ -25,6 +25,7 @@ export class AppComponent implements  OnInit {
   }
 
   async ngOnInit() {
+    await this.posSvc.initialize();
     await this.posSvc.readConfiguration();
   }
   

@@ -2,7 +2,13 @@ import { Injectable } from '@angular/core';
 import { Command } from '@tauri-apps/plugin-shell';
 import { clean as SemVerClean } from 'semver';
 import packageInfo from '../../../package.json'; // Adjust path to root
-import { EnvVarFile } from '../utils/envvar-file';
+import { EnvVarFile } from '../utils/envvar.file';
+
+import { 
+  BaseDirectory, 
+  exists, 
+  mkdir
+} from '@tauri-apps/plugin-fs';
 
 @Injectable({
   providedIn: 'root',
@@ -28,12 +34,38 @@ export class POSService {
     setInterval(() => { this.clock = new Date(); }, 1000);
   }
 
+  public async initialize() {
+    await this._initAppConfigDir();
+  }
+
   public async readConfiguration() {
     this._readECLIVersion();
     this._loadElvisEnv();
   }
 
   // private
+
+  private async _initAppConfigDir(): Promise<void> {
+    try {
+      const _exists = await exists('', {
+        baseDir: BaseDirectory.AppConfig,
+      });
+
+      if (_exists) {
+        console.log('AppConfig directory already exists');
+        return;
+      }
+
+      await mkdir('', {
+        baseDir: BaseDirectory.AppConfig,
+        recursive: true,
+      });
+      
+      console.log('AppConfig directory is ready');
+    } catch (error) {
+      console.error('Failed to create AppConfig directory:', error);
+    }
+  }
 
   private async _readECLIVersion(): Promise<string | undefined> {
     if (this.versions.ecli) return this.versions.ecli;

@@ -27,4 +27,18 @@ export class Helpers {
       setTimeout(() => resolve(), amt);
     })
   }
+
+  public static sortByKey<T>(array: T[], key: keyof T, asc: boolean = true): T[] {
+    return array.sort((a, b) => {
+      const x = a[key];
+      const y = b[key];
+      if (x < y) {
+        return asc ? -1 : 1;
+      }
+      if (x > y) {
+        return asc ? 1 : -1;
+      }
+      return 0;
+    });
+  }
 }

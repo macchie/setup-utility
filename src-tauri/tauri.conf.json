@@ -1,10 +1,10 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "setup-utility",
-  "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "version": "4.0.0",
+  "identifier": "com.elvispos.setup-utility",
   "build": {
-    "frontendDist": "../dist",
+    "frontendDist": "../www",
     "devUrl": "http://localhost:8100",
     "beforeDevCommand": "ionic serve --no-open",
     "beforeBuildCommand": "ionic build --configuration production"
@@ -26,7 +26,13 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": "deb",
+    "linux": {
+      "deb": {
+        "depends": [],
+        "files": {}
+      }
+    },
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

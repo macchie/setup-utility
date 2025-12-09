@@ -13,16 +13,17 @@ import { Command } from '@tauri-apps/plugin-shell';
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
-  imports: [IonText, IonFooter, 
+  imports: [
     CommonModule,
     FormsModule,
-    IonInput, 
     IonHeader, 
-    IonItem, 
+    IonFooter, 
+    IonToolbar,
     IonContent,
+    IonInput, 
+    IonItem, 
     IonButton, 
     IonIcon, 
-    IonToolbar,
     IonModal,
     IonTitle,
     IonList,
@@ -69,7 +70,6 @@ export class HomePage implements OnInit {
   constructor(
     private _cd: ChangeDetectorRef,
     private _navCtrl: NavController,
-    private _modalCtrl: ModalController,
     private _alertCtrl: AlertController,
     public posSvc: POSService,
     public networkSvc: NetworkService,
@@ -217,39 +217,6 @@ export class HomePage implements OnInit {
 
       this._cd.detectChanges();
     }
-
-        
-
-    //       try {
-    //         const dryResp = await Shell.run(
-    //           `rsync`,
-    //           [
-    //             `-avz`,
-    //             `--list-only`,
-    //             `elvispos@${this.serverAddress}::share/STORE_SEEDS/`,
-    //           ],
-    //           "stdout",
-    //         );
-
-    //         // -rw-r--r--            259 2022/11/24 15:22:34 s1001-db-data.sql.gz
-
-    //       } catch (error) {
-    //         this.lastSeedBadgeColor = 'dark';
-    //         this.lastSeedUpdate = null;
-    //         this.deviceInfo = null;
-    //         this.deviceIdValid = false;
-    //       }
-    //     }
-    //   } catch (error) {
-    //     this.lastSeedBadgeColor = 'dark';
-    //     this.lastSeedUpdate = null;
-    //     this.deviceInfo = null;
-    //     this.deviceIdValid = false;
-    //   }
-
-    //   this.deviceIdTouched = true;
-    //   this.checkingDevice = false;
-    // }, _immediate ? 10 : 1000);
   }
 
   async onScanNetworks() {

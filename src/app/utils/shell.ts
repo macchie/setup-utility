@@ -8,9 +8,8 @@ export class Shell {
     RSYNC_PASSWORD: 'ef7dc668-8fc3-47a2-ba45-f0d9582c55d5',
   };
   
-  static async run(_command: string, args: string[]): Promise<any> {
-    const _finalCommand = `${_command} ${args.join(' ')}`;
-    const _result = await Command.create('exec-sh', ['-c', _finalCommand]).execute();
+  static async run(_command: string): Promise<any> {
+    const _result = await Command.create('exec-sh', ['-c', _command]).execute();
 
     return _result
   }
