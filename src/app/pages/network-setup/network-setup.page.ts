@@ -118,10 +118,10 @@ export class NetworkSetupPage implements OnInit {
         { text: 'Cancel', role: 'cancel' },
         {
           text: 'Change',
-          handler: () => {
-            this.onRefreshSection();
+          handler: async () => {
+            await this.onRefreshSection();
             this._section = _newSection;
-            this.onRefreshSection();
+            await this.onRefreshSection();
           }
         }
       ]
