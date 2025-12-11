@@ -1,0 +1,31 @@
+# Use Debian 12 (Bookworm) to match your target
+FROM debian:bookworm
+
+# 1. Install System Dependencies for Tauri
+RUN apt-get update && apt-get install -y \
+  libwebkit2gtk-4.1-dev \
+  javascriptcoregtk-4.1-dev \
+  build-essential \
+  curl \
+  wget \
+  file \
+  libxdo-dev \
+  libssl-dev \
+  librsvg2-dev \
+  libgtk-3-dev \
+  libsoup-3.0-dev \
+  libayatana-appindicator3-dev \
+  && rm -rf /var/lib/apt/lists/*
+
+# 2. Install Rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# 3. Install Node.js (Adjust version 20 as needed)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs
+
+# 4. Install Ionic CLI
+RUN npm install -g @ionic/cli
+
+# Set the working directory
+WORKDIR /app

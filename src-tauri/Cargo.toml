@@ -1,8 +1,8 @@
 [package]
-name = "app"
-version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+name = "setup-utility"
+version = "4.0.0"
+description = "ElvisPOS Setup Utility"
+authors = ["ElvisPOS S.r.l."]
 license = ""
 repository = ""
 edition = "2021"

@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonContent, IonHeader, IonLabel, IonTitle, IonToolbar, IonButton, IonIcon, IonCard, NavController, IonList, IonItemDivider, IonItem, IonBadge, IonToggle, IonButtons, IonInput, IonCardContent, IonText, AlertController } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { addOutline, calendarOutline, checkmarkCircleOutline, closeOutline, createOutline, ellipse, ellipseOutline, pulseOutline, radioButtonOff, radioButtonOn, save, saveOutline, settingsOutline, wifiOutline, wifiSharp } from 'ionicons/icons';
 import { CronService } from '../../services/cron-service';
-import { NetworkService } from '../../services/network-service';
+import { NetworkInterface, NetworkService } from '../../services/network-service';
 
 @Component({
   selector: 'app-network-setup',
@@ -37,9 +37,12 @@ export class NetworkSetupPage implements OnInit {
 
   _section: 'network' | 'dns' | 'proxy' = 'network';
 
+  _selectedInterfaceKey?: string;
+  _interfacesFormGroups: Record<string, FormGroup> = {};
+
   get canSaveNetwork() {
-    for (let key in this.networkSvc.networkInterfaces) {
-      if (this.networkSvc.networkInterfaces[key]._formGroup.valid && this.networkSvc.networkInterfaces[key]._formGroup.dirty) {
+    for (let key in this._interfacesFormGroups) {
+      if (this._interfacesFormGroups[key].valid && this._interfacesFormGroups[key].dirty) {
         return true;
       }
     }
@@ -69,11 +72,11 @@ export class NetworkSetupPage implements OnInit {
   }
 
   async ngOnInit() {
-    await this.networkSvc.initialize();
+    await this.onRefresh();
   }
 
   async onRefreshSection() {
-    this.networkSvc.initialize();
+    this.onRefresh();
     return;
     const _alert = await this._alertCtrl.create({
       header: 'Warning',
@@ -92,6 +95,15 @@ export class NetworkSetupPage implements OnInit {
     await _alert.present();
   }
 
+  async onSetSelectedInterface(_interface: NetworkInterface) {
+    this._selectedInterfaceKey = _interface.name;
+  }
+
+  async onSaveInterfaces() {
+    await this.networkSvc.onSaveInterfaces(this._interfacesFormGroups);
+    await this.onRefresh();
+  }
+
   async onChangeSection(_newSection: 'network' | 'dns' | 'proxy') {
     if (this._section === _newSection) {
       return;
@@ -99,8 +111,8 @@ export class NetworkSetupPage implements OnInit {
 
     let _dirty = false;
 
-    for (let key in this.networkSvc.networkInterfaces) {
-      if (this.networkSvc.networkInterfaces[key]._formGroup.dirty) {
+    for (let key in this._interfacesFormGroups) {
+      if (this._interfacesFormGroups[key].dirty) {
         _dirty = true;
         break;
       }
@@ -132,6 +144,32 @@ export class NetworkSetupPage implements OnInit {
 
   onGoBack() {
     this._navCtrl.navigateRoot('/home');
+  }
+
+  // private
+
+  private async onRefresh() {
+    this._interfacesFormGroups = {};
+    await this.networkSvc.initialize();
+
+    for (const _interfaceKey in this.networkSvc.networkInterfaces) {
+      const _interface = this.networkSvc.networkInterfaces[_interfaceKey];
+
+      this._interfacesFormGroups[_interfaceKey] = new FormGroup({
+        address: new FormControl({ value: _interface.address, disabled: false }),
+        netmask: new FormControl({ value: _interface.netmask, disabled: false }),
+        gateway: new FormControl({ value: _interface.gateway, disabled: false }),
+        wifi_ssid: new FormControl({ value: _interface._wpaSupplicantFile?.network?.ssid, disabled: false }),
+        wifi_password: new FormControl({ value: _interface._wpaSupplicantFile?.network?.psk, disabled: false }),
+      });
+    }
+
+    if (!this._selectedInterfaceKey || !this.networkSvc.networkInterfaces[this._selectedInterfaceKey]) {
+      if (Object.keys(this.networkSvc.networkInterfaces).length > 0) {
+        this.onSetSelectedInterface(Object.values(this.networkSvc.networkInterfaces)[0]);
+      }
+    }
+    
   }
 
 }

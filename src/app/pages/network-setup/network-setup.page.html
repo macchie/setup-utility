@@ -39,7 +39,7 @@
             <ion-button class="square-button" color="light" (click)="onRefreshSection()">
               <ion-icon src="assets/lucide/refresh.svg"></ion-icon>
             </ion-button>
-            <ion-button class="ion-margin-end" color="success" (click)="networkSvc.onSaveInterfaces()" [disabled]="!canSaveNetwork">
+            <ion-button class="ion-margin-end" color="success" (click)="onSaveInterfaces()" [disabled]="!canSaveNetwork">
               <ion-icon src="assets/lucide/save.svg"></ion-icon>
               Save Changes
             </ion-button>
@@ -50,7 +50,7 @@
           <ion-card>
             <ion-list lines="full">
               @for (_entry of networkSvc.networkInterfaces | keyvalue; track $index) {
-                <ion-item button (click)="networkSvc.onSetSelectedInterface(_entry.value)" [class.selected]="_entry.key === networkSvc.selectedInterfaceKey" >
+                <ion-item button (click)="onSetSelectedInterface(_entry.value)" [class.selected]="_entry.key === _selectedInterfaceKey" >
                   <div class="meta" slot="start">
                     <ion-icon [src]="_entry.value.type === 'wired' ? 'assets/lucide/ethernet-port.svg' : 'assets/lucide/wireless.svg'" [color]="_entry.value.connected ? 'success' : 'danger'"></ion-icon>
                     <ion-badge color="medium">{{_entry.value.mode | uppercase}}</ion-badge>
@@ -59,58 +59,77 @@
                     <h4>{{_entry.value.name}}</h4>
                     <p>{{_entry.value.connected ? 'Online' : 'Offline'}}</p>
                   </ion-label>
-                  <ion-icon slot="end" [name]="_entry.key === networkSvc.selectedInterfaceKey ? 'radio-button-on' : 'radio-button-off'" [color]="_entry.key === networkSvc.selectedInterfaceKey ? 'primary' : 'medium'"></ion-icon>
+                  <ion-icon slot="end" [name]="_entry.key === _selectedInterfaceKey ? 'radio-button-on' : 'radio-button-off'" [color]="_entry.key === _selectedInterfaceKey ? 'primary' : 'medium'"></ion-icon>
                 </ion-item>
               }
             </ion-list>
+
+            <!-- <div class="ion-padding ion-text-end">
+              <small>{{networkSvc.INTERFACES_FOLDER}}</small>
+            </div> -->
           </ion-card>
 
           <ion-card>
-            @if (networkSvc.selectedInterfaceKey) {
+            @if (_selectedInterfaceKey) {
               <ion-list lines="full">
                 <ion-item-divider>
+                  <ion-icon 
+                    class="ion-margin-end"
+                    [src]="networkSvc.networkInterfaces[_selectedInterfaceKey].type === 'wired' ? 'assets/lucide/ethernet-port.svg' : 'assets/lucide/wireless.svg'"
+                    [color]="networkSvc.networkInterfaces[_selectedInterfaceKey].connected ? 'success' : 'danger'"
+                  ></ion-icon>
                   <div class="divider-content">
                     <b class="ion-no-margin ion-no-padding">
                       Interface:
                       <ion-text color="primary">
-                        {{networkSvc.networkInterfaces[networkSvc.selectedInterfaceKey].name}}
+                        {{networkSvc.networkInterfaces[_selectedInterfaceKey].name}}
                       </ion-text>
                     </b>
-                    <span>{{networkSvc.networkInterfaces[networkSvc.selectedInterfaceKey].macAddress}}</span>
+                    <span>{{networkSvc.networkInterfaces[_selectedInterfaceKey].macAddress}}</span>
                   </div>
                 </ion-item-divider>
               </ion-list>
               <ion-card-content>
-                <form [formGroup]="networkSvc.networkInterfaces[networkSvc.selectedInterfaceKey]._formGroup">
-                  @if (networkSvc.networkInterfaces[networkSvc.selectedInterfaceKey].type === 'wireless') {
+                @if (_interfacesFormGroups[_selectedInterfaceKey]) {
+                  <form [formGroup]="_interfacesFormGroups[_selectedInterfaceKey]">
+                    @if (networkSvc.networkInterfaces[_selectedInterfaceKey].type === 'wireless') {
+                      <div class="input-group">
+                        <div class="input color-{{_interfacesFormGroups[_selectedInterfaceKey].get('wifi_ssid')?.valid ? 'success' : 'danger'}}">
+                          <ion-label for="ssid">SSID</ion-label>
+                          <ion-input formControlName="wifi_ssid" placeholder="WIFI Name"></ion-input>
+                        </div>
+                        <div class="input color-{{_interfacesFormGroups[_selectedInterfaceKey].get('wifi_password')?.valid ? 'success' : 'danger'}}">
+                          <ion-label for="password">PASSWORD</ion-label>
+                          <ion-input type="password" formControlName="wifi_password" placeholder="WIFI Password"></ion-input>
+                        </div>
+                      </div>
+                      <hr>
+                    }
+                    <div class="input ion-margin-bottom color-{{_interfacesFormGroups[_selectedInterfaceKey].get('address')?.valid ? 'success' : 'danger'}}">
+                      <ion-label for="address">IP ADDRESS</ion-label>
+                      <ion-input formControlName="address" placeholder="10.0.0.123"></ion-input>
+                    </div>
                     <div class="input-group">
-                      <div class="input color-{{networkSvc.networkInterfaces[networkSvc.selectedInterfaceKey]._formGroup.get('wifi_ssid')?.valid ? 'success' : 'danger'}}">
-                        <ion-label for="ssid">SSID</ion-label>
-                        <ion-input formControlName="wifi_ssid" placeholder="WIFI Name"></ion-input>
+                      <div class="input color-{{_interfacesFormGroups[_selectedInterfaceKey].get('netmask')?.valid ? 'success' : 'danger'}}">
+                        <ion-label for="netmask">NETMASK</ion-label>
+                        <ion-input formControlName="netmask" placeholder="255.255.255.0"></ion-input>
                       </div>
-                      <div class="input color-{{networkSvc.networkInterfaces[networkSvc.selectedInterfaceKey]._formGroup.get('wifi_password')?.valid ? 'success' : 'danger'}}">
-                        <ion-label for="password">PASSWORD</ion-label>
-                        <ion-input type="password" formControlName="wifi_password" placeholder="WIFI Password"></ion-input>
+                      <div class="input color-{{_interfacesFormGroups[_selectedInterfaceKey].get('gateway')?.valid ? 'success' : 'danger'}}">
+                        <ion-label for="gateway">GATEWAY</ion-label>
+                        <ion-input formControlName="gateway" placeholder="10.0.0.1"></ion-input>
                       </div>
                     </div>
-                    <hr>
-                  }
-                  <div class="input ion-margin-bottom color-{{networkSvc.networkInterfaces[networkSvc.selectedInterfaceKey]._formGroup.get('ip')?.valid ? 'success' : 'danger'}}">
-                    <ion-label for="ip">IP ADDRESS</ion-label>
-                    <ion-input formControlName="ip" placeholder="10.0.0.123"></ion-input>
-                  </div>
-                  <div class="input-group">
-                    <div class="input color-{{networkSvc.networkInterfaces[networkSvc.selectedInterfaceKey]._formGroup.get('netmask')?.valid ? 'success' : 'danger'}}">
-                      <ion-label for="netmask">NETMASK</ion-label>
-                      <ion-input formControlName="netmask" placeholder="255.255.255.0"></ion-input>
-                    </div>
-                    <div class="input color-{{networkSvc.networkInterfaces[networkSvc.selectedInterfaceKey]._formGroup.get('gateway')?.valid ? 'success' : 'danger'}}">
-                      <ion-label for="gateway">GATEWAY</ion-label>
-                      <ion-input formControlName="gateway" placeholder="10.0.0.1"></ion-input>
-                    </div>
-                  </div>
-                </form>
+                  </form>
+                }
               </ion-card-content>
+              <ion-list lines="full">
+                <ion-item-divider>
+                  <div class="divider-content">
+                    <span></span>
+                    <span>{{networkSvc.networkInterfaces[_selectedInterfaceKey]._interfaceFile.filePath}}</span>
+                  </div>
+                </ion-item-divider>
+              </ion-list>
             }
           </ion-card>
         </div>

@@ -1,8 +1,10 @@
+use tauri::Manager; // Import Manager to access get_window
 use futures::future::join_all;
 use std::sync::Arc; // For sharing memory
 use tokio::net::TcpStream; // Use Tokio's non-blocking stream
 use tokio::sync::Semaphore;
 use tokio::time::{timeout, Duration}; // For limiting concurrency
+use std::env;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -20,6 +22,11 @@ pub fn run() {
                         .level(log::LevelFilter::Info)
                         .build(),
                 )?;
+            }
+            if env::var("FULLSCREEN").is_ok() {
+                if let Some(window) = app.get_webview_window("main") {
+                    window.set_fullscreen(true).expect("failed to set fullscreen");
+                }
             }
             Ok(())
         })

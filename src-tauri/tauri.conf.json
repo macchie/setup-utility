@@ -12,6 +12,7 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "ElvisPOS Setup Utility",
         "width": 960,
         "height": 718,
